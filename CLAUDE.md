@@ -36,7 +36,7 @@ Channel Plugin 运行在 OpenClaw 进程里（不是 Electron 里）。它告诉
 ## Monorepo 结构
 
 ```
-clawwork/
+./
 ├── package.json              # pnpm workspace root
 ├── pnpm-workspace.yaml
 ├── tsconfig.base.json        # ES2022, strict, bundler resolution
