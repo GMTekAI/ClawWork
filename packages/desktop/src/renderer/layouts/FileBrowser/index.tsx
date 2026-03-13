@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { Search } from 'lucide-react'
 import { useFileStore } from '@/stores/fileStore'
 import { useTaskStore } from '@/stores/taskStore'
 import { useMessageStore } from '@/stores/messageStore'
@@ -28,10 +29,12 @@ export default function FileBrowser() {
   const filterTaskId = useFileStore((s) => s.filterTaskId)
   const sortBy = useFileStore((s) => s.sortBy)
   const selectedId = useFileStore((s) => s.selectedArtifactId)
+  const searchQuery = useFileStore((s) => s.searchQuery)
   const setArtifacts = useFileStore((s) => s.setArtifacts)
   const setFilterTaskId = useFileStore((s) => s.setFilterTaskId)
   const setSortBy = useFileStore((s) => s.setSortBy)
   const setSelectedArtifact = useFileStore((s) => s.setSelectedArtifact)
+  const setSearchQuery = useFileStore((s) => s.setSearchQuery)
 
   const tasks = useTaskStore((s) => s.tasks)
   const setActiveTask = useTaskStore((s) => s.setActiveTask)
@@ -52,9 +55,16 @@ export default function FileBrowser() {
     return m
   }, [tasks])
 
-  const filtered = filterTaskId
-    ? artifacts.filter((a) => a.taskId === filterTaskId)
-    : artifacts
+  const filtered = useMemo(() => {
+    let list = filterTaskId
+      ? artifacts.filter((a) => a.taskId === filterTaskId)
+      : artifacts
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase()
+      list = list.filter((a) => a.name.toLowerCase().includes(q))
+    }
+    return list
+  }, [artifacts, filterTaskId, searchQuery])
 
   const sorted = useMemo(() => sortArtifacts(filtered, sortBy), [filtered, sortBy])
   const selectedArtifact = useMemo(
@@ -79,6 +89,20 @@ export default function FileBrowser() {
       <div className="flex flex-col flex-1 min-w-0">
         <header className="flex items-center gap-3 px-6 py-3 border-b border-[var(--border)] flex-shrink-0">
           <h2 className="text-sm font-medium text-[var(--text-primary)]">文件管理</h2>
+          <div className="relative">
+            <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[var(--text-muted)]" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="搜索文件…"
+              className={cn(
+                'h-7 pl-8 pr-3 rounded-md bg-[var(--bg-tertiary)] border border-[var(--border)]',
+                'text-xs text-[var(--text-secondary)] outline-none',
+                'focus:border-[var(--border-accent)] placeholder:text-[var(--text-muted)] transition-colors',
+              )}
+            />
+          </div>
           <select
             value={filterTaskId ?? ''}
             onChange={(e) => setFilterTaskId(e.target.value || null)}

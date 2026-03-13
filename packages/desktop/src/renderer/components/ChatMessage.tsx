@@ -74,7 +74,24 @@ export default function ChatMessage({ message, highlighted, onHighlightDone }: C
             <p className="whitespace-pre-wrap">{message.content}</p>
           ) : (
             <div className="prose-chat">
-              <Markdown rehypePlugins={[rehypeHighlight]}>
+              <Markdown
+                rehypePlugins={[rehypeHighlight]}
+                components={{
+                  img: ({ src, alt }) => {
+                    const actualSrc = src?.startsWith('clawwork-media://')
+                      ? `file://${src.replace('clawwork-media://', '')}`
+                      : src;
+                    return (
+                      <img
+                        src={actualSrc}
+                        alt={alt ?? ''}
+                        className="max-w-full max-h-80 rounded-lg mt-2 cursor-pointer"
+                        onClick={() => actualSrc && window.open(actualSrc)}
+                      />
+                    );
+                  },
+                }}
+              >
                 {message.content}
               </Markdown>
             </div>

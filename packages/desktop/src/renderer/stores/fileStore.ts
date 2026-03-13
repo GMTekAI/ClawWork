@@ -13,12 +13,14 @@ interface FileState {
   filterTaskId: string | null;
   sortBy: SortBy;
   selectedArtifactId: string | null;
+  searchQuery: string;
 
   setArtifacts: (artifacts: Artifact[]) => void;
   addArtifact: (artifact: Artifact) => void;
   setFilterTaskId: (taskId: string | null) => void;
   setSortBy: (sortBy: SortBy) => void;
   setSelectedArtifact: (id: string | null) => void;
+  setSearchQuery: (query: string) => void;
 }
 
 export const useFileStore = create<FileState>((set) => ({
@@ -26,6 +28,7 @@ export const useFileStore = create<FileState>((set) => ({
   filterTaskId: null,
   sortBy: 'date',
   selectedArtifactId: null,
+  searchQuery: '',
 
   setArtifacts: (artifacts) => set({ artifacts }),
 
@@ -37,4 +40,6 @@ export const useFileStore = create<FileState>((set) => ({
   setSortBy: (sortBy) => set({ sortBy }),
 
   setSelectedArtifact: (id) => set({ selectedArtifactId: id }),
+
+  setSearchQuery: (query) => set({ searchQuery: query }),
 }));

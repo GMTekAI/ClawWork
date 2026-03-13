@@ -5,7 +5,8 @@ export type AgentMessageAction =
   | { type: 'markUnread'; taskId: string }
   | { type: 'addMessage'; taskId: string; role: 'assistant'; content: string }
   | { type: 'appendStreamDelta'; taskId: string; delta: string }
-  | { type: 'finalizeStream'; taskId: string };
+  | { type: 'finalizeStream'; taskId: string }
+  | { type: 'saveMedia'; taskId: string; mediaPath: string; mediaType: string; fileName?: string };
 
 export function getAgentMessageActions(
   msg: WsMessage,
@@ -44,6 +45,15 @@ export function getAgentMessageActions(
       if (msg.done) {
         actions.push({ type: 'finalizeStream', taskId });
       }
+      break;
+    case 'media':
+      actions.push({
+        type: 'saveMedia',
+        taskId,
+        mediaPath: msg.mediaPath,
+        mediaType: msg.mediaType,
+        fileName: msg.fileName,
+      });
       break;
     default:
       return [];

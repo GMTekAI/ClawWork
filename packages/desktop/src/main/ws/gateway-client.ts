@@ -13,6 +13,7 @@ import type {
   GatewayConnectParams,
 } from '@clawwork/shared';
 import type { BrowserWindow } from 'electron';
+import { sendToWindow } from './window-utils.js';
 
 type PendingReq = {
   resolve: (payload: Record<string, unknown>) => void;
@@ -109,7 +110,7 @@ export class GatewayClient {
       return;
     }
 
-    this.mainWindow?.webContents.send('gateway-event', {
+    sendToWindow(this.mainWindow, 'gateway-event', {
       event: frame.event,
       payload: frame.payload,
       seq: frame.seq,
@@ -141,7 +142,7 @@ export class GatewayClient {
           this.authenticated = true;
           this.reconnectAttempts = 0;
           this.startHeartbeat();
-          this.mainWindow?.webContents.send('gateway-status', { connected: true });
+          sendToWindow(this.mainWindow, 'gateway-status', { connected: true });
         } else {
           console.error('[gateway] unexpected connect response:', payload);
         }
@@ -229,7 +230,7 @@ export class GatewayClient {
     if (this.destroyed) return;
     if (this.reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
       console.error('[gateway] max reconnect attempts reached');
-      this.mainWindow?.webContents.send('gateway-status', {
+      sendToWindow(this.mainWindow, 'gateway-status', {
         connected: false,
         error: 'max reconnect attempts',
       });

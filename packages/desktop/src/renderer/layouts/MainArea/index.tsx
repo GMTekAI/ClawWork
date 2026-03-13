@@ -11,6 +11,7 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
 import ChatMessage from '@/components/ChatMessage'
 import StreamingMessage from '@/components/StreamingMessage'
+import ThinkingIndicator from '@/components/ThinkingIndicator'
 import ChatInput from '@/components/ChatInput'
 import FileBrowser from '../FileBrowser'
 
@@ -97,12 +98,15 @@ function ChatContent() {
   )
   const highlightedId = useMessageStore((s) => s.highlightedMessageId)
   const setHighlightedMessage = useMessageStore((s) => s.setHighlightedMessage)
+  const isProcessing = useMessageStore((s) =>
+    activeTaskId ? s.processingTasks.has(activeTaskId) : false,
+  )
   const scrollRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const el = scrollRef.current
     if (el) el.scrollTop = el.scrollHeight
-  }, [messages.length, streamingContent])
+  }, [messages.length, streamingContent, isProcessing])
 
   return (
     <>
@@ -119,6 +123,9 @@ function ChatContent() {
             />
           ))}
           {streamingContent && <StreamingMessage content={streamingContent} />}
+          <AnimatePresence>
+            {isProcessing && !streamingContent && <ThinkingIndicator />}
+          </AnimatePresence>
         </div>
       </ScrollArea>
       <ChatInput />

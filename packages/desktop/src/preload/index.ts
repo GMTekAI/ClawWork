@@ -62,6 +62,20 @@ function buildApi(): ClawWorkAPI {
     globalSearch: (query: string) =>
       ipcRenderer.invoke('search:global', query),
 
+    persistTask: (task: {
+      id: string; sessionKey: string; sessionId: string; title: string;
+      status: string; createdAt: string; updatedAt: string; tags: string[];
+      artifactDir: string;
+    }) => ipcRenderer.invoke('data:create-task', task),
+
+    persistTaskUpdate: (params: {
+      id: string; title?: string; status?: string; updatedAt: string;
+    }) => ipcRenderer.invoke('data:update-task', params),
+
+    persistMessage: (msg: {
+      id: string; taskId: string; role: string; content: string; timestamp: string;
+    }) => ipcRenderer.invoke('data:create-message', msg),
+
     removeAllListeners: (channel: string) => {
       ipcRenderer.removeAllListeners(channel);
     },

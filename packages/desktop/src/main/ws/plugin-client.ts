@@ -8,6 +8,7 @@ import {
 import type { WsMessage, WsHeartbeat, WsUserMessage } from '@clawwork/shared';
 import { isOutboundMessage } from '@clawwork/shared';
 import type { BrowserWindow } from 'electron';
+import { sendToWindow } from './window-utils.js';
 
 export class PluginClient {
   private ws: WebSocket | null = null;
@@ -38,7 +39,7 @@ export class PluginClient {
       console.log('[plugin] connected');
       this.reconnectAttempts = 0;
       this.startHeartbeat();
-      this.mainWindow?.webContents.send('plugin-status', { connected: true });
+      sendToWindow(this.mainWindow, 'plugin-status', { connected: true });
     });
 
     this.ws.on('message', (raw) => {
@@ -70,7 +71,7 @@ export class PluginClient {
     }
 
     if (isOutboundMessage(msg)) {
-      this.mainWindow?.webContents.send('agent-message', msg);
+      sendToWindow(this.mainWindow, 'agent-message', msg);
     }
   }
 
@@ -113,7 +114,7 @@ export class PluginClient {
     if (this.destroyed) return;
     if (this.reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
       console.error('[plugin] max reconnect attempts reached');
-      this.mainWindow?.webContents.send('plugin-status', {
+      sendToWindow(this.mainWindow, 'plugin-status', {
         connected: false,
         error: 'max reconnect attempts',
       });

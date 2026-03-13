@@ -1,9 +1,10 @@
 import { type MouseEvent } from 'react'
 import { motion } from 'framer-motion'
-import { MessageSquare, Circle } from 'lucide-react'
+import { MessageSquare, Circle, Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { formatRelativeTime } from '@/lib/utils'
 import { useTaskStore } from '@/stores/taskStore'
+import { useMessageStore } from '@/stores/messageStore'
 import { useUiStore } from '@/stores/uiStore'
 import { motion as motionPresets } from '@/styles/design-tokens'
 import type { Task } from '@clawwork/shared'
@@ -19,6 +20,7 @@ export default function TaskItem({ task, active, onContextMenu }: TaskItemProps)
   const clearUnread = useUiStore((s) => s.clearUnread)
   const hasUnread = useUiStore((s) => s.unreadTaskIds.has(task.id))
   const setMainView = useUiStore((s) => s.setMainView)
+  const isStreaming = useMessageStore((s) => !!s.streamingByTask[task.id])
 
   const handleClick = (): void => {
     setActiveTask(task.id)
@@ -49,9 +51,11 @@ export default function TaskItem({ task, active, onContextMenu }: TaskItemProps)
           <p className="font-medium truncate flex-1">
             {task.title || '新任务'}
           </p>
-          {hasUnread && (
+          {isStreaming ? (
+            <Loader2 size={12} className="flex-shrink-0 animate-spin text-[var(--accent)]" />
+          ) : hasUnread ? (
             <Circle size={6} className="flex-shrink-0 fill-[var(--accent)] text-[var(--accent)]" />
-          )}
+          ) : null}
         </div>
         <div className="flex items-center gap-1.5 mt-0.5">
           {task.status === 'completed' && (

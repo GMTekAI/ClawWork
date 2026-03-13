@@ -15,6 +15,7 @@ export default function ChatInput() {
   );
 
   const addMessage = useMessageStore((s) => s.addMessage);
+  const setProcessing = useMessageStore((s) => s.setProcessing);
   const updateTaskTitle = useTaskStore((s) => s.updateTaskTitle);
 
   const handleSend = useCallback(async () => {
@@ -28,6 +29,7 @@ export default function ChatInput() {
     textarea.style.height = 'auto';
 
     addMessage(activeTask.id, 'user', content);
+    setProcessing(activeTask.id, true);
 
     if (!activeTask.title) {
       const title = content.slice(0, 30).replace(/\n/g, ' ').trim();
@@ -37,11 +39,12 @@ export default function ChatInput() {
     try {
       await window.clawwork.sendMessage(activeTask.sessionKey, content);
     } catch (err) {
+      setProcessing(activeTask.id, false);
       const msg = err instanceof Error ? err.message : String(err);
       addMessage(activeTask.id, 'system', `\u53D1\u9001\u5931\u8D25: ${msg}`);
       toast.error('Failed to send message', { description: msg });
     }
-  }, [activeTask, addMessage, updateTaskTitle]);
+  }, [activeTask, addMessage, setProcessing, updateTaskTitle]);
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent<HTMLTextAreaElement>) => {

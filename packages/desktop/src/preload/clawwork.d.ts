@@ -71,6 +71,20 @@ export interface ClawWorkAPI {
   updateSettings: (partial: Partial<AppSettings>) => Promise<{ ok: boolean; config: AppSettings }>;
 
   globalSearch: (query: string) => Promise<SearchResponse>;
+
+  persistTask: (task: {
+    id: string; sessionKey: string; sessionId: string; title: string;
+    status: string; createdAt: string; updatedAt: string; tags: string[];
+    artifactDir: string;
+  }) => Promise<IpcResult>;
+
+  persistTaskUpdate: (params: {
+    id: string; title?: string; status?: string; updatedAt: string;
+  }) => Promise<IpcResult>;
+
+  persistMessage: (msg: {
+    id: string; taskId: string; role: string; content: string; timestamp: string;
+  }) => Promise<IpcResult>;
 }
 
 declare global {

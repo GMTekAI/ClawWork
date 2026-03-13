@@ -60,12 +60,15 @@ export function useGatewayEventDispatcher(): void {
       if (state === 'delta') {
         const text = extractText(payload);
         if (text) {
+          useMessageStore.getState().setProcessing(taskId, false);
           appendStreamDelta(taskId, text);
         }
       } else if (state === 'final') {
+        useMessageStore.getState().setProcessing(taskId, false);
         finalizeStream(taskId);
         autoTitleIfNeeded(taskId, updateTaskTitle);
       } else if (state === 'error' || state === 'aborted') {
+        useMessageStore.getState().setProcessing(taskId, false);
         finalizeStream(taskId);
         if (state === 'error') {
           const errText = extractText(payload) || '请求出错';
@@ -92,11 +95,29 @@ export function useGatewayEventDispatcher(): void {
             addMessage(action.taskId, action.role, action.content);
             break;
           case 'appendStreamDelta':
+            useMessageStore.getState().setProcessing(action.taskId, false);
             appendStreamDelta(action.taskId, action.delta);
             break;
           case 'finalizeStream':
+            useMessageStore.getState().setProcessing(action.taskId, false);
             finalizeStream(action.taskId);
             break;
+          case 'saveMedia': {
+            const msgId = crypto.randomUUID();
+            addMessage(
+              action.taskId,
+              'assistant',
+              `![${action.fileName ?? 'media'}](clawwork-media://${action.mediaPath})`,
+            );
+            window.clawwork.saveArtifact({
+              taskId: action.taskId,
+              sourcePath: action.mediaPath,
+              messageId: msgId,
+              fileName: action.fileName,
+              mediaType: action.mediaType,
+            });
+            break;
+          }
         }
       }
     };
@@ -126,6 +147,15 @@ export function useGatewayEventDispatcher(): void {
       wasConnectedRef.current = s.connected;
     });
     return () => { window.clawwork.removeAllListeners('gateway-status'); };
+  }, []);
+
+  useEffect(() => {
+    const setPluginStatus = useUiStore.getState().setPluginStatus;
+    window.clawwork.onPluginStatus((s) => {
+      const next = s.connected ? 'connected' as const : s.error ? 'disconnected' as const : 'connecting' as const;
+      setPluginStatus(next);
+    });
+    return () => { window.clawwork.removeAllListeners('plugin-status'); };
   }, []);
 }
 

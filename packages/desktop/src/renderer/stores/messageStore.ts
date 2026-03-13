@@ -9,6 +9,8 @@ interface MessageState {
   messagesByTask: Record<string, Message[]>;
   /** taskId → currently streaming assistant content (delta accumulator) */
   streamingByTask: Record<string, string>;
+  /** Set of taskIds currently waiting for Agent response */
+  processingTasks: Set<string>;
   /** message ID to highlight (e.g. from file navigation) */
   highlightedMessageId: string | null;
 
@@ -17,6 +19,7 @@ interface MessageState {
   finalizeStream: (taskId: string) => void;
   clearMessages: (taskId: string) => void;
   setHighlightedMessage: (id: string | null) => void;
+  setProcessing: (taskId: string, processing: boolean) => void;
 }
 
 export { EMPTY_MESSAGES };
@@ -28,6 +31,7 @@ function generateId(): string {
 export const useMessageStore = create<MessageState>((set, get) => ({
   messagesByTask: {},
   streamingByTask: {},
+  processingTasks: new Set(),
   highlightedMessageId: null,
 
   addMessage: (taskId, role, content) => {
@@ -46,6 +50,13 @@ export const useMessageStore = create<MessageState>((set, get) => ({
         [taskId]: [...(s.messagesByTask[taskId] ?? []), msg],
       },
     }));
+    window.clawwork.persistMessage({
+      id: msg.id,
+      taskId: msg.taskId,
+      role: msg.role,
+      content: msg.content,
+      timestamp: msg.timestamp,
+    }).catch(() => {});
     return msg;
   },
 
@@ -76,4 +87,12 @@ export const useMessageStore = create<MessageState>((set, get) => ({
     }),
 
   setHighlightedMessage: (id) => set({ highlightedMessageId: id }),
+
+  setProcessing: (taskId, processing) =>
+    set((s) => {
+      const next = new Set(s.processingTasks);
+      if (processing) next.add(taskId);
+      else next.delete(taskId);
+      return { processingTasks: next };
+    }),
 }));

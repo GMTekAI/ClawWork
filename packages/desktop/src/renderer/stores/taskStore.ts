@@ -40,22 +40,31 @@ export const useTaskStore = create<TaskState>((set) => ({
       tasks: [task, ...s.tasks],
       activeTaskId: id,
     }));
+    window.clawwork.persistTask(task).catch(() => {});
     return task;
   },
 
   setActiveTask: (id) => set({ activeTaskId: id }),
 
-  updateTaskTitle: (id, title) =>
+  updateTaskTitle: (id, title) => {
     set((s) => ({
       tasks: s.tasks.map((t) =>
         t.id === id ? { ...t, title, updatedAt: new Date().toISOString() } : t,
       ),
-    })),
+    }));
+    window.clawwork.persistTaskUpdate({
+      id, title, updatedAt: new Date().toISOString(),
+    }).catch(() => {});
+  },
 
-  updateTaskStatus: (id, status) =>
+  updateTaskStatus: (id, status) => {
     set((s) => ({
       tasks: s.tasks.map((t) =>
         t.id === id ? { ...t, status, updatedAt: new Date().toISOString() } : t,
       ),
-    })),
+    }));
+    window.clawwork.persistTaskUpdate({
+      id, status, updatedAt: new Date().toISOString(),
+    }).catch(() => {});
+  },
 }));
