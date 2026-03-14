@@ -1,8 +1,31 @@
-# ClawWork
+<div align="center">
+  <img src="./docs/screenshot.png" alt="ClawWork" width="100%" />
 
-A desktop client for [OpenClaw](https://github.com/openclaw/openclaw) — three-column layout, multi-task parallel execution, structured progress tracking, and local file management with Git versioning.
+  <h1>ClawWork</h1>
+  <p><em>Stop chatting with agents in Telegram, Feishu - The dedicated desktop client for <a href="https://github.com/openclaw/openclaw">OpenClaw</a></em></p>
 
-![ClawWork Screenshot](./docs/screenshot.png)
+  <p>
+    <a href="https://github.com/clawwork-ai/clawwork/releases"><img src="https://img.shields.io/github/v/release/clawwork-ai/clawwork?style=flat-square&label=release" alt="Release" /></a>
+    <a href="https://github.com/clawwork-ai/clawwork/blob/main/LICENSE"><img src="https://img.shields.io/github/license/clawwork-ai/clawwork?style=flat-square" alt="License" /></a>
+    <a href="https://github.com/clawwork-ai/clawwork/issues"><img src="https://img.shields.io/github/issues/clawwork-ai/clawwork?style=flat-square" alt="Issues" /></a>
+    <img src="https://img.shields.io/badge/platform-macOS%20%7C%20Windows-lightgrey?style=flat-square" alt="Platform" />
+    <img src="https://img.shields.io/badge/react-19-61DAFB?style=flat-square&logo=react&logoColor=black" alt="React" />
+  </p>
+
+  <p>
+    <a href="https://github.com/clawwork-ai/clawwork/releases/latest">
+      <img src="https://img.shields.io/badge/⬇%20Download%20DMG-28a745?style=for-the-badge" alt="Download" />
+    </a>
+    &nbsp;
+    <a href="#install-with-homebrew">
+      <img src="https://img.shields.io/badge/🍺%20Homebrew-FBB040?style=for-the-badge&labelColor=FBB040&color=555" alt="Homebrew" />
+    </a>
+  </p>
+</div>
+
+---
+
+A Client for [OpenClaw](https://github.com/openclaw/openclaw) — Connect ClawWork to your own OpenClaw and unlock ***10x*** multi-session productivity.
 
 ## Features
 
@@ -22,22 +45,8 @@ A desktop client for [OpenClaw](https://github.com/openclaw/openclaw) — three-
 ## Quick Start
 
 ```bash
-# Install dependencies
-pnpm install
-
-# Start in development mode
-pnpm --filter @clawwork/desktop dev
-```
-
-Configure the Gateway address and token in **Settings** (bottom-left gear icon), or set the environment variable:
-
-```bash
-OPENCLAW_GATEWAY_TOKEN=<your-token> pnpm dev
-```
-
 ## Install with Homebrew
 
-```bash
 brew tap clawwork-ai/clawwork
 brew install --cask clawwork
 ```
