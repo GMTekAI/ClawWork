@@ -1,20 +1,23 @@
-import { ipcMain, dialog, BrowserWindow } from 'electron';
-import { getWorkspacePath, writeConfig, isWorkspaceConfigured, getDefaultWorkspacePath } from '../workspace/config.js';
-import { initWorkspace } from '../workspace/init.js';
-import { initDatabase } from '../db/index.js';
+import { ipcMain, dialog, BrowserWindow, shell } from 'electron';
+import {
+  getWorkspacePath,
+  writeConfig,
+  updateConfig,
+  isWorkspaceConfigured,
+  getDefaultWorkspacePath,
+} from '../workspace/config.js';
+import { initWorkspace, migrateWorkspace } from '../workspace/init.js';
+import { initDatabase, reinitDatabase, closeDatabase } from '../db/index.js';
 
 export function registerWorkspaceHandlers(): void {
-  ipcMain.handle('workspace:is-configured', () => {
-    return isWorkspaceConfigured();
+  ipcMain.handle('workspace:open-folder', () => {
+    const p = getWorkspacePath();
+    if (p) shell.openPath(p);
   });
 
-  ipcMain.handle('workspace:get-path', () => {
-    return getWorkspacePath();
-  });
-
-  ipcMain.handle('workspace:get-default', () => {
-    return getDefaultWorkspacePath();
-  });
+  ipcMain.handle('workspace:is-configured', isWorkspaceConfigured);
+  ipcMain.handle('workspace:get-path', getWorkspacePath);
+  ipcMain.handle('workspace:get-default', getDefaultWorkspacePath);
 
   ipcMain.handle('workspace:browse', async () => {
     const win = BrowserWindow.getAllWindows()[0];
@@ -39,6 +42,27 @@ export function registerWorkspaceHandlers(): void {
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'setup failed';
       return { ok: false, error: msg };
+    }
+  });
+
+  ipcMain.handle('workspace:change', async (_event, newWorkspacePath: string) => {
+    const oldPath = getWorkspacePath();
+    if (!oldPath) return { ok: false, error: 'no current workspace' };
+    if (oldPath === newWorkspacePath) return { ok: true };
+    closeDatabase();
+    try {
+      await migrateWorkspace(oldPath, newWorkspacePath);
+      reinitDatabase(newWorkspacePath);
+      updateConfig({ workspacePath: newWorkspacePath });
+      return { ok: true };
+    } catch (err) {
+      let suffix = '';
+      try {
+        reinitDatabase(oldPath);
+      } catch (rollbackErr) {
+        suffix = `; rollback failed: ${rollbackErr instanceof Error ? rollbackErr.message : 'unknown'}`;
+      }
+      return { ok: false, error: `${err instanceof Error ? err.message : 'migration failed'}${suffix}` };
     }
   });
 }

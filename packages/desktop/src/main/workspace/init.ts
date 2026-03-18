@@ -1,5 +1,6 @@
 import { mkdirSync, writeFileSync, existsSync } from 'fs';
-import { join } from 'path';
+import { cp } from 'fs/promises';
+import { join, resolve } from 'path';
 import simpleGit from 'simple-git';
 import { DB_FILE_NAME } from '@clawwork/shared';
 
@@ -27,6 +28,16 @@ export async function initWorkspace(workspacePath: string): Promise<void> {
     writeFileSync(gitignorePath, GITIGNORE_CONTENT, 'utf-8');
     console.log('[workspace] created .gitignore');
   }
+}
+
+export async function migrateWorkspace(oldPath: string, newPath: string): Promise<void> {
+  if (!existsSync(oldPath)) throw new Error(`Source workspace does not exist: ${oldPath}`);
+  const resolvedOld = resolve(oldPath);
+  const resolvedNew = resolve(newPath);
+  if (resolvedNew.startsWith(resolvedOld + '/') || resolvedNew === resolvedOld) {
+    throw new Error('New workspace path must not be inside or equal to the current workspace');
+  }
+  await cp(resolvedOld, resolvedNew, { recursive: true });
 }
 
 export function ensureTaskDir(workspacePath: string, taskId: string): string {
