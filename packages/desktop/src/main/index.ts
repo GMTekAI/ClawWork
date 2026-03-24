@@ -17,6 +17,7 @@ import { configureVoicePermissionHandlers, registerVoiceHandlers } from './ipc/v
 import { registerTrayHandlers } from './ipc/tray-handlers.js';
 import { registerQuickLaunchHandlers } from './ipc/quick-launch-handlers.js';
 import { registerContextHandlers } from './ipc/context-handlers.js';
+import { registerNotificationHandlers } from './ipc/notification-handlers.js';
 import { unwatchAll } from './context/file-watcher.js';
 import { isInstallingUpdate } from './auto-updater.js';
 import { initTray, destroyTray, updateTrayWindow } from './tray.js';
@@ -175,6 +176,7 @@ app.whenReady().then(() => {
   registerTrayHandlers();
   registerQuickLaunchHandlers();
   registerContextHandlers();
+  registerNotificationHandlers();
 
   const wsPath = getWorkspacePath();
   if (wsPath) {
