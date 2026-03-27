@@ -1,5 +1,6 @@
-import { useEffect, useRef, useCallback, type ReactNode } from 'react';
+import { useEffect, useRef, type ReactNode } from 'react';
 import { AnimatePresence, m, useDragControls } from 'framer-motion';
+import { useFocusTrap } from '../hooks/useFocusTrap';
 
 const SPRING = { type: 'spring' as const, damping: 25, stiffness: 300 };
 const DRAG_DISMISS_OFFSET = 100;
@@ -23,52 +24,17 @@ export function BottomSheet({
   ariaLabelledBy,
 }: BottomSheetProps) {
   const sheetRef = useRef<HTMLDivElement>(null);
-  const prevFocusRef = useRef<HTMLElement | null>(null);
   const dragControls = useDragControls();
 
-  const handleKeyDown = useCallback(
-    (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        onClose();
-        return;
-      }
-      if (e.key !== 'Tab' || !sheetRef.current) return;
-      const focusable = sheetRef.current.querySelectorAll<HTMLElement>(
-        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
-      );
-      if (focusable.length === 0) return;
-      const first = focusable[0]!;
-      const last = focusable[focusable.length - 1]!;
-      if (e.shiftKey) {
-        if (document.activeElement === first) {
-          e.preventDefault();
-          last.focus();
-        }
-      } else {
-        if (document.activeElement === last) {
-          e.preventDefault();
-          first.focus();
-        }
-      }
-    },
-    [onClose],
-  );
+  useFocusTrap(sheetRef, open, onClose);
 
   useEffect(() => {
     if (!open) return;
-    prevFocusRef.current = document.activeElement as HTMLElement | null;
     document.body.style.overflow = 'hidden';
-    document.addEventListener('keydown', handleKeyDown);
-    requestAnimationFrame(() => {
-      const first = sheetRef.current?.querySelector<HTMLElement>('button');
-      first?.focus();
-    });
     return () => {
       document.body.style.overflow = '';
-      document.removeEventListener('keydown', handleKeyDown);
-      prevFocusRef.current?.focus();
     };
-  }, [open, handleKeyDown]);
+  }, [open]);
 
   return (
     <AnimatePresence>
