@@ -361,16 +361,6 @@ export function useChatSend(opts: UseChatSendOpts) {
     [activeTask, handleSend, textareaRef],
   );
 
-  const handleCompact = useCallback(() => {
-    if (!activeTask || isOffline) return;
-    composer.applySlashCommand(activeTask.id, 'compact').catch(() => {});
-  }, [activeTask, isOffline]);
-
-  const handleReset = useCallback(() => {
-    if (!activeTask || isOffline) return;
-    composer.applySlashCommand(activeTask.id, 'reset').catch(() => {});
-  }, [activeTask, isOffline]);
-
   const [aborting, setAborting] = useState(false);
   const handleAbort = useCallback(async () => {
     if (!activeTask || aborting) return;
@@ -421,8 +411,6 @@ export function useChatSend(opts: UseChatSendOpts) {
     handleSend,
     handleModelQuickSend,
     handleThinkingQuickSend,
-    handleCompact,
-    handleReset,
     handleAbort,
     handleToolSelect,
   };

@@ -4,30 +4,10 @@ import { useTaskStore } from '../../stores/taskStore';
 
 export function useContextFolders() {
   const [contextFolders, setContextFolders] = useState<string[]>([]);
-  const [contextFileCount, setContextFileCount] = useState(0);
   const [localFilesForPicker, setLocalFilesForPicker] = useState<FileIndexEntry[]>([]);
   const activeTaskId = useTaskStore((s) => s.activeTaskId);
   const foldersByTaskRef = useRef<Record<string, string[]>>({});
   const prevTaskIdRef = useRef<string>('');
-  const refreshIdRef = useRef(0);
-
-  const refreshContextFiles = useCallback(async (folders: string[]) => {
-    const id = ++refreshIdRef.current;
-    if (folders.length === 0) {
-      setContextFileCount(0);
-      return;
-    }
-    if (typeof window.clawwork.listContextFiles !== 'function') {
-      setContextFileCount(0);
-      return;
-    }
-    const res = await window.clawwork.listContextFiles(folders);
-    if (id !== refreshIdRef.current) return;
-    if (res.ok && res.result) {
-      const files = res.result as unknown as FileIndexEntry[];
-      setContextFileCount(files.filter((f) => f.tier === 'text').length);
-    }
-  }, []);
 
   useEffect(() => {
     const key = activeTaskId ?? '';
@@ -43,20 +23,9 @@ export function useContextFolders() {
       for (const f of nextFolders) window.clawwork.watchContextFolder(f);
     }
     setContextFolders(nextFolders);
-    refreshContextFiles(nextFolders);
 
     prevTaskIdRef.current = key;
-  }, [activeTaskId, refreshContextFiles]);
-
-  useEffect(() => {
-    if (typeof window.clawwork.onContextFilesChanged !== 'function') return;
-    const cleanup = window.clawwork.onContextFilesChanged((changedFolder) => {
-      if (contextFolders.includes(changedFolder)) {
-        refreshContextFiles(contextFolders);
-      }
-    });
-    return cleanup;
-  }, [contextFolders, refreshContextFiles]);
+  }, [activeTaskId]);
 
   useEffect(() => {
     const taskFolders = foldersByTaskRef.current;
@@ -86,9 +55,8 @@ export function useContextFolders() {
         return next;
       });
       await window.clawwork.watchContextFolder(path);
-      refreshContextFiles([...(foldersByTaskRef.current[activeTaskId ?? ''] ?? [])]);
     }
-  }, [activeTaskId, refreshContextFiles]);
+  }, [activeTaskId]);
 
   const handleRemoveContextFolder = useCallback(
     (path: string) => {
@@ -101,10 +69,8 @@ export function useContextFolders() {
         foldersByTaskRef.current[key] = next;
         return next;
       });
-      const remaining = foldersByTaskRef.current[activeTaskId ?? ''] ?? [];
-      refreshContextFiles(remaining);
     },
-    [activeTaskId, refreshContextFiles],
+    [activeTaskId],
   );
 
   const loadLocalFiles = useCallback(
@@ -128,7 +94,6 @@ export function useContextFolders() {
 
   return {
     contextFolders,
-    contextFileCount,
     localFilesForPicker,
     handleAddContextFolder,
     handleRemoveContextFolder,
